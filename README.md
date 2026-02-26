@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Database Infrastructure Automation (GCP + Terraform + Ansible)
 
 This repository provisions and configures PostgreSQL database VMs on Google Cloud.
@@ -95,4 +95,4 @@ Destroy infrastructure and related secrets:
 =======
 # db-prov-config
 # Database Infrastructure Automation (GCP + Terraform + Ansible)  This repository provisions and configures PostgreSQL database VMs on Google Cloud.
->>>>>>> 0ea40808c7d34515518b47fcd6cb877eaeb1c5a7
+
