@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Database Infrastructure Automation (GCP + Terraform + Ansible)
 
 This repository provisions and configures PostgreSQL database VMs on Google Cloud.
@@ -91,3 +92,7 @@ Destroy infrastructure and related secrets:
 - Run `./validate.sh` before provisioning changes.
 - Run shell syntax validation before commit (`make lint`).
 - Prefer plan (`-p`) before apply/destroy in controlled environments.
+=======
+# db-prov-config
+# Database Infrastructure Automation (GCP + Terraform + Ansible)  This repository provisions and configures PostgreSQL database VMs on Google Cloud.
+>>>>>>> 0ea40808c7d34515518b47fcd6cb877eaeb1c5a7
