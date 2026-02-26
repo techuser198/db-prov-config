@@ -1,0 +1,17 @@
+project_id: terraform-project-484318
+region: europe-west1
+zone: europe-west1-b
+
+instance:
+  machine_type: e2-standard-4
+  disk_size: 50
+  data_disk_size: 100
+  image: projects/rhel-cloud/global/images/family/rhel-8
+
+db:
+  name: NNDEVDB
+  sid: NNDEV
+  pdb: NNDEVPDB
+  character_set: AL32UTF8
+  memory_mb: 2048
+

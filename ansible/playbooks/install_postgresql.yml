@@ -1,0 +1,30 @@
+---
+- name: Install and Configure PostgreSQL Database
+  hosts: all
+  become: yes
+  vars_files:
+    - "{{ config_file }}"
+
+  vars:
+    db_name: "{{ db.name }}"
+    db_memory_mb: "{{ db.memory_mb }}"
+
+  roles:
+    - role: postgresql
+      when: db.type == 'postgres'
+
+  tasks:
+    - name: Display completion message
+      debug:
+        msg:
+          - "=========================================="
+          - "PostgreSQL Installation Complete!"
+          - "=========================================="
+          - "Database: {{ db.name | lower }}"
+          - "User: {{ db.name | lower }}_user"
+          - "Password: postgres"
+          - "Port: 5432"
+          - ""
+          - "Connect: psql -U postgres -d postgres -h {{ ansible_default_ipv4.address }}"
+          - "=========================================="
+      when: db.type == 'postgres'

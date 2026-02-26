@@ -1,0 +1,49 @@
+- name: Install PostgreSQL repository
+  become: yes
+  become_user: root
+  yum:
+    name: "https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
+    state: present
+    disable_gpg_check: yes
+
+- name: Disable built-in PostgreSQL module (RHEL/CentOS 9+)
+  become: yes
+  become_user: root
+  shell: dnf -qy module disable postgresql
+  args:
+    warn: false
+  changed_when: false
+  failed_when: false
+
+- name: Install EPEL repository (for dependencies)
+  become: yes
+  become_user: root
+  yum:
+    name: epel-release
+    state: present
+
+- name: Install PostgreSQL server and contrib
+  become: yes
+  become_user: root
+  yum:
+    name:
+      - "postgresql{{ pg_version }}-server"
+      - "postgresql{{ pg_version }}-contrib"
+      - "postgresql{{ pg_version }}-libs"
+      - python3-psycopg2
+    state: present
+  no_log: true
+
+- name: Install additional system packages
+  become: yes
+  become_user: root
+  yum:
+    name:
+      - vim
+      - wget
+      - net-tools
+      - tar
+      - gzip
+    state: present
+  no_log: true
+ 

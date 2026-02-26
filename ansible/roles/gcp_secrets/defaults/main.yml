@@ -1,0 +1,10 @@
+---
+# Default variables for gcp_secrets role
+
+# Debug mode - shows info messages but never logs secret values
+gcp_secrets_debug: false
+
+# Default secret version (can be overridden)
+# Options: "latest", "1", "2", etc.
+secret_version: latest
+

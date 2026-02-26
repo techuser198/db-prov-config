@@ -1,0 +1,51 @@
+---
+# PostgreSQL Installation Default Variables
+
+# PostgreSQL version
+# Prefer environment config (`db.version`) and fall back to 15 if not provided.
+postgresql_version: "{{ db.version | default('15') }}"
+
+# PostgreSQL directories
+postgresql_data_dir: "/var/lib/pgsql/{{ postgresql_version }}/data"
+postgresql_bin_dir: "/usr/pgsql-{{ postgresql_version }}/bin"
+postgresql_log_dir: "/var/log/postgresql"
+postgresql_backup_dir: "/var/lib/pgsql/backups"
+postgresql_tmp_dir: "/tmp"
+postgresql_app_setup_sql_path: "{{ postgresql_tmp_dir }}/setup_application_database.sql"
+
+# PostgreSQL user and group
+postgresql_user: postgres
+postgresql_group: postgres
+
+# PostgreSQL service
+postgresql_service: "postgresql-{{ postgresql_version }}"
+
+# Database configuration
+postgresql_port: 5432
+postgresql_listen_addresses: "'*'"
+postgresql_max_connections: 200
+postgresql_client_cidrs:
+  - "127.0.0.1/32"
+  - "::1/128"
+
+# Memory settings (overridden by db_memory_mb from config)
+postgresql_shared_buffers: "512MB"
+postgresql_effective_cache_size: "1536MB"
+postgresql_maintenance_work_mem: "128MB"
+postgresql_work_mem: "4MB"
+
+# WAL and logging
+postgresql_wal_level: "replica"
+postgresql_max_wal_senders: 3
+postgresql_max_replication_slots: 3
+postgresql_log_timezone: "UTC"
+postgresql_timezone: "UTC"
+
+# Character encoding
+postgresql_encoding: "UTF8"
+postgresql_locale: "en_US.UTF-8"
+
+# Superuser and application defaults
+postgresql_superuser: postgres
+postgresql_app_database: "{{ db_name }}"
+postgresql_app_user: "{{ db_name | lower }}_user"

@@ -1,0 +1,27 @@
+- name: Check root filesystem size
+  become: yes
+  become_user: root
+  shell: df -BG / | tail -1 | awk '{print $2}' | sed 's/G//'
+  register: root_fs_size
+  changed_when: false
+
+- name: Display filesystem size
+  debug:
+    msg: "Root filesystem size: {{ root_fs_size.stdout }}GB"
+
+- name: Warning if filesystem is too small
+  debug:
+    msg: "WARNING: Root filesystem is less than 20GB. PostgreSQL installation requires at least 20GB."
+  when: root_fs_size.stdout | int < 20
+
+- name: Fail if filesystem is critically small
+  fail:
+    msg: |
+      ERROR: Root filesystem is only {{ root_fs_size.stdout }}GB.
+      PostgreSQL requires at least 20GB.
+      
+      You may need to resize your disk:
+        growpart /dev/sda 2
+        resize2fs /dev/sda2
+  when: root_fs_size.stdout | int < 10
+

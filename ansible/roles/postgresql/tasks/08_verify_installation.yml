@@ -1,0 +1,37 @@
+---
+
+- name: Verify PostgreSQL service is running
+  become: yes
+  become_user: root
+  command: systemctl is-active --quiet {{ pg_service }}
+  register: service_status
+  changed_when: false
+  failed_when: service_status.rc != 0
+
+- name: Verify PostgreSQL is accepting connections
+  become: yes
+  become_user: "{{ pg_user }}"
+  shell: "{{ pg_bin_dir }}/pg_isready -h localhost -p {{ pg_port }}"
+  register: pg_connection_test
+  changed_when: false
+
+- name: Get PostgreSQL version
+  become: yes
+  become_user: "{{ pg_user }}"
+  shell: "{{ pg_bin_dir }}/psql --version"
+  register: pg_version_output
+  changed_when: false
+
+- name: Display installation summary
+  debug:
+    msg:
+      - "=========================================="
+      - "PostgreSQL Installation Complete"
+      - "=========================================="
+      - "PostgreSQL Version: {{ pg_version_output.stdout }}"
+      - "Service Status: {{ 'RUNNING' if service_status.rc == 0 else 'NOT RUNNING' }}"
+      - "Port: {{ pg_port }}"
+      - "Data Directory: {{ pg_data_dir }}"
+      - "Application Database: {{ db_name | lower }}"
+      - "Application User: {{ db_name | lower }}_user"
+      - "=========================================="

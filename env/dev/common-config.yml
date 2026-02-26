@@ -1,0 +1,56 @@
+# Common configuration for dev environment
+# Used by encryption/decryption scripts and secret management
+
+# GCP Project ID for this environment
+project_id: terraform-project-484318
+
+# Environment metadata
+environment: dev
+description: Development environment for database deployments
+
+# Region short name mapping (for secret naming)
+# Pattern: {db_type}-{secret_type}-{region_short}-{env}-{customer}
+# Add new regions here as needed
+region_short_names:
+  # Asia Pacific
+  asia-south1: as1           # Mumbai
+  asia-south2: as2           # Delhi
+  asia-southeast1: ase1      # Singapore
+  asia-southeast2: ase2      # Jakarta
+  asia-east1: ae1            # Taiwan
+  asia-east2: ae2            # Hong Kong
+  asia-northeast1: an1       # Tokyo
+  asia-northeast2: an2       # Osaka
+  asia-northeast3: an3       # Seoul
+  
+  # Americas
+  us-central1: uc1           # Iowa
+  us-east1: ue1              # South Carolina
+  us-east4: ue4              # Northern Virginia
+  us-west1: uw1              # Oregon
+  us-west2: uw2              # Los Angeles
+  us-west3: uw3              # Salt Lake City
+  us-west4: uw4              # Las Vegas
+  northamerica-northeast1: nan1  # Montreal
+  northamerica-northeast2: nan2  # Toronto
+  southamerica-east1: sae1   # São Paulo
+  southamerica-west1: saw1   # Santiago
+  
+  # Europe
+  europe-west1: ew1          # Belgium
+  europe-west2: ew2          # London
+  europe-west3: ew3          # Frankfurt
+  europe-west4: ew4          # Netherlands
+  europe-west6: ew6          # Zurich
+  europe-west8: ew8          # Milan
+  europe-west9: ew9          # Paris
+  europe-north1: en1         # Finland
+  europe-central2: ec2       # Warsaw
+  
+  # Middle East & Africa
+  me-west1: mw1              # Tel Aviv
+  africa-south1: af1         # Johannesburg
+  
+  # Australia
+  australia-southeast1: aus1 # Sydney
+  australia-southeast2: aus2 # Melbourne

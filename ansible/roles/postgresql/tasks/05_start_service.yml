@@ -1,0 +1,29 @@
+- name: Enable PostgreSQL service
+  become: yes
+  systemd:
+    name: "{{ pg_service }}"
+    enabled: yes
+    daemon_reload: yes
+
+- name: Start PostgreSQL service
+  become: yes
+  systemd:
+    name: "{{ pg_service }}"
+    state: started
+
+- name: Wait for PostgreSQL port
+  become: yes
+  wait_for:
+    port: "{{ pg_port }}"
+    delay: 3
+    timeout: 60
+
+- name: Verify PostgreSQL readiness
+  become: yes
+  become_user: postgres
+  command: "{{ pg_bin_dir }}/pg_isready -h localhost -p {{ pg_port }}"
+  register: pg_ready
+  retries: 10
+  delay: 3
+  until: pg_ready.rc == 0
+  changed_when: false

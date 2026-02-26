@@ -1,0 +1,17 @@
+project_id: terraform-project-484318
+region: asia-south1
+zone: asia-south1-a
+
+instance:
+  machine_type: e2-standard-4
+  disk_size: 50
+  data_disk_size: 100
+  image: projects/rhel-cloud/global/images/family/rhel-8
+
+db:
+  name: AMCERTDB
+  sid: AMCERT
+  pdb: AMCERTPDB
+  character_set: AL32UTF8
+  memory_mb: 2048
+

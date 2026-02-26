@@ -1,0 +1,51 @@
+
+plugin: gcp_compute
+projects:
+  - YOUR_GCP_PROJECT_ID  # Replace with actual project ID
+auth_kind: application
+
+filters:
+  - labels.managed-by = terraform
+  - labels.role = database
+
+keyed_groups:
+  - key: labels.environment
+    prefix: env
+
+  - key: labels.customer
+    prefix: customer
+
+  - key: labels.role
+    prefix: role
+  - key: labels.environment + '_' + labels.customer
+    prefix: group
+
+hostnames:
+  - name
+
+compose:
+  ansible_host: networkInterfaces[0].accessConfigs[0].natIP
+
+  # Alternative: Use internal hostname (for connections within GCP)
+  # ansible_host: name + '.c.' + project + '.internal'
+
+  # SSH configuration
+  ansible_user: sabre
+  ansible_ssh_private_key_file: ~/.ssh/id_rsa
+  ansible_python_interpreter: /usr/bin/python3
+
+  # Instance metadata
+  instance_external_ip: networkInterfaces[0].accessConfigs[0].natIP
+  instance_internal_ip: networkInterfaces[0].networkIP
+  instance_zone: zone
+  instance_project: project
+
+  # Database metadata from labels
+  db_environment: labels.environment
+  db_customer: labels.customer
+
+# Cache configuration (speeds up inventory refresh)
+cache: yes
+cache_plugin: jsonfile
+cache_timeout: 300
+cache_connection: /tmp/ansible_gcp_cache

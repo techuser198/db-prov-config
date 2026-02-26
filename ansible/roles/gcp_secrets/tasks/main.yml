@@ -1,0 +1,63 @@
+---
+- name: Validate required variables
+  assert:
+    that:
+      - secret_name is defined
+      - project is defined
+      - output_var is defined
+    fail_msg: |
+      Required variables missing for gcp_secrets role:
+        - secret_name: Name of the secret in GCP Secret Manager
+        - project: GCP project ID
+        - output_var: Variable name to store the secret value
+    success_msg: "All required variables provided for reading secret: {{ secret_name }}"
+
+- name: Display secret retrieval info
+  debug:
+    msg:
+      - "=========================================="
+      - "Reading Secret from GCP Secret Manager"
+      - "=========================================="
+      - "Secret Name: {{ secret_name }}"
+      - "Project: {{ project }}"
+      - "Output Variable: {{ output_var }}"
+      - "Version: {{ secret_version | default('latest enabled') }}"
+  when: gcp_secrets_debug | default(false)
+
+- name: Get latest enabled secret version
+  shell: |
+    gcloud secrets versions list {{ secret_name }} \
+      --project {{ project }} \
+      --limit 1 \
+      --filter 'state=enabled' \
+      --format 'value(name)' \
+      --quiet
+  register: latest_version
+  delegate_to: localhost
+  become: no
+  when: secret_version is not defined or secret_version == 'latest'
+  changed_when: false
+  #no_log: true
+
+- name: Read secret from GCP Secret Manager
+  shell: |
+    gcloud secrets versions access \
+      {{ secret_version | default(latest_version.stdout) }} \
+      --project {{ project }} \
+      --secret {{ secret_name }}
+  register: _secret_result
+  delegate_to: localhost
+  become: no
+  run_once: true
+  no_log: true
+  changed_when: false
+
+- name: "Save secret value to {{ output_var }}"
+  set_fact:
+    "{{ output_var }}": "{{ _secret_result.stdout }}"
+  no_log: true
+
+- name: Confirm secret loaded
+  debug:
+    msg: " Secret '{{ secret_name }}' loaded into variable '{{ output_var }}'"
+  when: gcp_secrets_debug | default(false)

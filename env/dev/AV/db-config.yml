@@ -1,0 +1,15 @@
+project_id: terraform-project-484318
+region: asia-south1
+zone: asia-south1-a
+
+instance:
+  machine_type: e2-standard-4
+  disk_size: 50
+  data_disk_size: 100
+  # CentOS Stream 9 - Free, RHEL-compatible
+  image: projects/centos-cloud/global/images/family/centos-stream-9
+
+db:
+  type: postgres
+  name: AVDEVDB
+  memory_mb: 2048

@@ -1,0 +1,71 @@
+- name: Stop PostgreSQL service if running
+  become: yes
+  systemd:
+    name: "{{ pg_service }}"
+    state: stopped
+  failed_when: false
+
+- name: Check if PG_VERSION file exists
+  become: yes
+  stat:
+    path: "{{ pg_data_dir }}/PG_VERSION"
+  register: pg_version_file
+
+- name: Check if base directory exists
+  become: yes
+  stat:
+    path: "{{ pg_data_dir }}/base"
+  register: pg_base_dir
+
+- name: Set cluster_corrupted flag
+  set_fact:
+    cluster_corrupted: true
+  when:
+    - pg_version_file.stat.exists
+    - not pg_base_dir.stat.exists
+
+- name: Remove corrupted PostgreSQL data directory
+  become: yes
+  file:
+    path: "{{ pg_data_dir }}"
+    state: absent
+  when: cluster_corrupted | default(false)
+
+- name: Initialize PostgreSQL database cluster
+  become: yes
+  command: "{{ pg_bin_dir }}/postgresql-{{ pg_version }}-setup initdb"
+  when:
+    - not pg_version_file.stat.exists
+      or cluster_corrupted | default(false)
+
+- name: Ensure correct ownership of PostgreSQL directory
+  become: yes
+  file:
+    path: "{{ pg_data_dir | dirname }}"
+    owner: "{{ pg_user }}"
+    group: "{{ pg_group }}"
+    recurse: yes
+
+- name: Restore SELinux contexts
+  become: yes
+  command: "restorecon -Rv {{ pg_data_dir | dirname }}"
+  failed_when: false
+  changed_when: false
+
+- name: Create backup directory
+  become: yes
+  file:
+    path: "{{ pg_backup_dir }}"
+    state: directory
+    owner: "{{ pg_user }}"
+    group: "{{ pg_group }}"
+    mode: '0755'
+
+- name: Create log directory
+  become: yes
+  file:
+    path: "{{ pg_log_dir }}"
+    state: directory
+    owner: "{{ pg_user }}"
+    group: "{{ pg_group }}"
+    mode: '0755'

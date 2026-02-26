@@ -1,0 +1,15 @@
+- name: restart postgresql
+  become: yes
+  become_user: root
+  systemd:
+    name: "{{ pg_service }}"
+    state: restarted
+  listen: "restart postgresql"
+
+- name: reload postgresql
+  become: yes
+  become_user: root
+  systemd:
+    name: "{{ pg_service }}"
+    state: reloaded
+  listen: "reload postgresql"

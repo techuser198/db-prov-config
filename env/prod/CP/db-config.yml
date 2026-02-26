@@ -1,0 +1,17 @@
+project_id: terraform-project-484318
+region: us-central1
+zone: us-central1-a
+
+instance:
+  machine_type: e2-standard-8
+  disk_size: 100
+  data_disk_size: 200
+  image: projects/rhel-cloud/global/images/family/rhel-8
+
+db:
+  name: CPPRODDB
+  sid: CPPROD
+  pdb: CPPRODPDB
+  character_set: AL32UTF8
+  memory_mb: 4096
+

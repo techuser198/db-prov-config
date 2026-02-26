@@ -1,0 +1,44 @@
+---
+- name: Install and Configure Database
+  hosts: all
+  become: yes
+  vars_files:
+    - "{{ config_file }}"
+
+  vars:
+    db_name: "{{ db.name }}"
+    db_memory_mb: "{{ db.memory_mb }}"
+    db_type: "{{ db.type }}"
+
+  pre_tasks:
+    - name: Display database type
+      debug:
+        msg:
+          - "=========================================="
+          - "Database Type: {{ db_type | upper }}"
+          - "=========================================="
+
+    - name: Validate db_type parameter
+      fail:
+        msg: "Invalid db_type '{{ db_type }}'. This project supports only 'postgres'."
+      when: db_type != 'postgres'
+
+  roles:
+    - role: postgresql
+      when: db_type == 'postgres'
+
+  post_tasks:
+    - name: Display PostgreSQL completion message
+      debug:
+        msg:
+          - "=========================================="
+          - "PostgreSQL Installation Complete!"
+          - "=========================================="
+          - "Database: {{ db_name | lower }}"
+          - "User: {{ db_name | lower }}_user"
+          - "Password: postgres"
+          - "Port: 5432"
+          - ""
+          - "Connect: psql -U postgres -d {{ db_name | lower }}"
+          - "=========================================="
+      when: db_type == 'postgres'

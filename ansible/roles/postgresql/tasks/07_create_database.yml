@@ -1,0 +1,32 @@
+- name: Validate user password is loaded
+  assert:
+    that:
+      - db_user_password is defined
+      - db_user_password | length > 0
+    fail_msg: "User password not loaded from GCP Secret Manager"
+    success_msg: "User password loaded"
+
+- name: Render application database setup script
+  become: yes
+  template:
+    src: sql/setup_application_database.sql.j2
+    dest: "{{ pg_app_setup_sql_path }}"
+    owner: "{{ pg_user }}"
+    group: "{{ pg_group }}"
+    mode: '0600'
+  no_log: true
+
+- name: Execute application database setup script
+  become: yes
+  become_user: "{{ pg_user }}"
+  shell: |
+    {{ pg_bin_dir }}/psql -d postgres -v ON_ERROR_STOP=1 -f {{ pg_app_setup_sql_path }}
+  environment:
+    PGDATA: "{{ pg_data_dir }}"
+  register: app_db_setup
+  no_log: true
+  changed_when: >
+    'CREATE DATABASE' in app_db_setup.stdout or
+    'NOTICE:  USER_CREATED' in app_db_setup.stderr or
+    'NOTICE:  USER_PASSWORD_UPDATED' in app_db_setup.stderr or
+    'NOTICE:  PRIVILEGES_GRANTED' in app_db_setup.stderr

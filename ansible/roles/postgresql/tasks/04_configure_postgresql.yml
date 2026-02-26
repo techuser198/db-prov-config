@@ -1,0 +1,42 @@
+- name: Calculate PostgreSQL memory settings based on db_memory_mb
+  set_fact:
+    calculated_shared_buffers: "{{ (db_memory_mb | int * 0.25) | int }}MB"
+    calculated_effective_cache_size: "{{ (db_memory_mb | int * 0.75) | int }}MB"
+    calculated_maintenance_work_mem: "{{ (db_memory_mb | int * 0.05) | int }}MB"
+    calculated_work_mem: "{{ ((db_memory_mb | int * 0.25) / 200) | int }}MB"
+
+- name: Configure postgresql.conf
+  become: yes
+  template:
+    src: postgresql.conf.j2
+    dest: "{{ pg_data_dir }}/postgresql.conf"
+    owner: "{{ pg_user }}"
+    group: "{{ pg_group }}"
+    mode: '0600'
+  notify: restart postgresql
+
+- name: Remove deprecated stats_temp_directory from postgresql.conf
+  become: yes
+  lineinfile:
+    path: "{{ pg_data_dir }}/postgresql.conf"
+    regexp: '^stats_temp_directory'
+    state: absent
+  notify: restart postgresql
+
+- name: Configure pg_hba.conf for network access
+  become: yes
+  template:
+    src: pg_hba.conf.j2
+    dest: "{{ pg_data_dir }}/pg_hba.conf"
+    owner: "{{ pg_user }}"
+    group: "{{ pg_group }}"
+    mode: '0600'
+  notify: restart postgresql
+
+- name: Ensure postgres owns data directory
+  become: yes
+  file:
+    path: "{{ pg_data_dir }}"
+    owner: "{{ pg_user }}"
+    group: "{{ pg_group }}"
+    recurse: yes

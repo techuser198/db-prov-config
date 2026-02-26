@@ -1,0 +1,88 @@
+- name: Set PostgreSQL facts
+  set_fact:
+    pg_version: "{{ postgresql_version }}"
+    pg_data_dir: "{{ postgresql_data_dir }}"
+    pg_bin_dir: "{{ postgresql_bin_dir }}"
+    pg_log_dir: "{{ postgresql_log_dir }}"
+    pg_backup_dir: "{{ postgresql_backup_dir }}"
+    pg_tmp_dir: "{{ postgresql_tmp_dir }}"
+    pg_app_setup_sql_path: "{{ postgresql_app_setup_sql_path }}"
+    pg_service: "{{ postgresql_service }}"
+    pg_user: "{{ postgresql_user }}"
+    pg_group: "{{ postgresql_group }}"
+    pg_port: "{{ postgresql_port }}"
+
+- name: Load configuration from file
+  set_fact:
+    _config: "{{ lookup('file', config_file) | from_yaml }}"
+
+- name: Extract environment and customer from inventory hostname
+  set_fact:
+    _hostname_parts: "{{ inventory_hostname.split('-') }}"
+
+- name: Set environment and customer from hostname
+  set_fact:
+    _environment: "{{ _hostname_parts[-1] }}"
+    _customer: "{{ _hostname_parts[-2] | upper }}"
+
+- name: Extract configuration values for secret naming
+  set_fact:
+    _project_id: "{{ _config.project_id }}"
+    _db_region: "{{ _config.region }}"
+
+- name: Load common config for region mapping
+  set_fact:
+    _common_config: "{{ lookup('file', playbook_dir + '/../../env/' + _environment + '/common-config.yml') | from_yaml }}"
+
+- name: Get region short name
+  set_fact:
+    _region_short: "{{ _common_config.region_short_names[_db_region] | default(_db_region) }}"
+
+- name: Build secret name components
+  set_fact:
+    _customer_lower: "{{ _customer | lower }}"
+    _secret_prefix: "postgres"
+    _secret_suffix: "-{{ _region_short }}-{{ _environment }}-{{ _customer | lower }}"
+
+- name: Display secret naming details
+  debug:
+    msg:
+      - "Secret naming components:"
+      - "  Project: {{ _project_id }}"
+      - "  Region: {{ _db_region }} ({{ _region_short }})"
+      - "  Environment: {{ _environment }}"
+      - "  Customer: {{ _customer }}"
+      - "  Secret pattern: {{ _secret_prefix }}-{type}{{ _secret_suffix }}"
+
+- name: Read master password from GCP Secret Manager
+  include_tasks: "{{ playbook_dir }}/../roles/gcp_secrets/tasks/read_db_secrets.yml"
+  vars:
+    secret_name: "{{ _secret_prefix }}-master-pwd{{ _secret_suffix }}"
+    project: "{{ _project_id }}"
+    output_var: "db_master_password"
+    environment: "{{ _environment }}"
+    db_type: "postgres"
+    db_region: "{{ _db_region }}"
+    customer: "{{ _customer }}"
+    region_short_names: "{{ _common_config.region_short_names }}"
+
+- name: Read user password from GCP Secret Manager
+  include_tasks: "{{ playbook_dir }}/../roles/gcp_secrets/tasks/read_db_secrets.yml"
+  vars:
+    secret_name: "{{ _secret_prefix }}-user-pwd{{ _secret_suffix }}"
+    project: "{{ _project_id }}"
+    output_var: "db_user_password"
+    environment: "{{ _environment }}"
+    db_type: "postgres"
+    db_region: "{{ _db_region }}"
+    customer: "{{ _customer }}"
+    region_short_names: "{{ _common_config.region_short_names }}"
+
+- name: Display secret loading status (without showing values)
+  debug:
+    msg:
+      - "Database secrets loaded from GCP Secret Manager"
+      - "  - Master password: {{ 'Loaded' if db_master_password is defined else 'Failed' }}"
+      - "  - User password: {{ 'Loaded' if db_user_password is defined else 'Failed' }}"
+
+ 

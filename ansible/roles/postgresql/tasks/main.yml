@@ -1,0 +1,54 @@
+---
+- name: Set role facts
+  include_tasks: 00_set_facts.yml
+  tags:
+    - always
+    - setup
+
+- name: Run preflight checks
+  include_tasks: 01_preflight_checks.yml
+  tags:
+    - preflight
+    - setup
+
+- name: Install PostgreSQL packages
+  include_tasks: 02_install_packages.yml
+  tags:
+    - install
+    - packages
+
+- name: Initialize PostgreSQL cluster
+  include_tasks: 03_initialize_database.yml
+  tags:
+    - init
+    - database
+
+- name: Configure PostgreSQL
+  include_tasks: 04_configure_postgresql.yml
+  tags:
+    - config
+    - configure
+
+- name: Start PostgreSQL service
+  include_tasks: 05_start_service.yml
+  tags:
+    - service
+    - start
+
+- name: Set PostgreSQL passwords
+  include_tasks: 06_set_passwords.yml
+  tags:
+    - security
+    - passwords
+
+- name: Create application database and user
+  include_tasks: 07_create_database.yml
+  tags:
+    - database
+    - appdb
+
+- name: Verify PostgreSQL installation
+  include_tasks: 08_verify_installation.yml
+  tags:
+    - verify
+    - validation
